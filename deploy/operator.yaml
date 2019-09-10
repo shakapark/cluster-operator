@@ -13,7 +13,7 @@ spec:
       labels:
         name: storageos-cluster-operator
     spec:
-      serviceAccountName: storageoscluster-operator-sa
+      serviceAccountName: storageos-operator
       containers:
         - name: storageos-cluster-operator
           image: storageos/cluster-operator:test
@@ -38,4 +38,4 @@ spec:
       - key: "key"
         operator: "Equal"
         value: "value"
-        effect: "NoSchedule" 
+        effect: "NoSchedule"
