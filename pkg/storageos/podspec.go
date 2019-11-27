@@ -39,9 +39,10 @@ func (s *Deployment) addSharedDir(podSpec *corev1.PodSpec) {
 	nodeContainer := &podSpec.Containers[0]
 
 	// If kubelet is running in a container, sharedDir should be set.
+	// TODO: c2 defaults to ROOT_DIR+/volumes
 	if s.stos.Spec.SharedDir != "" {
 		envVar := corev1.EnvVar{
-			Name:  deviceDirEnvVar,
+			Name:  DeviceDirEnvVar,
 			Value: fmt.Sprintf("%s/devices", s.stos.Spec.SharedDir),
 		}
 		nodeContainer.Env = append(nodeContainer.Env, envVar)
@@ -146,57 +147,57 @@ func (s *Deployment) addCSI(podSpec *corev1.PodSpec) {
 
 		envVar := []corev1.EnvVar{
 			{
-				Name:  csiEndpointEnvVar,
+				Name:  CSIEndpointEnvVar,
 				Value: s.stos.Spec.GetCSIEndpoint(CSIV1Supported(s.k8sVersion)),
 			},
 		}
 
-		// Append CSI Provision Creds env var if enabled.
-		if s.stos.Spec.CSI.EnableProvisionCreds {
-			envVar = append(
-				envVar,
-				corev1.EnvVar{
-					Name:  csiRequireCredsCreateEnvVar,
-					Value: "true",
-				},
-				corev1.EnvVar{
-					Name:  csiRequireCredsDeleteEnvVar,
-					Value: "true",
-				},
-				getCSICredsEnvVar(csiProvisionCredsUsernameEnvVar, csiProvisionerSecretName, "username"),
-				getCSICredsEnvVar(csiProvisionCredsPasswordEnvVar, csiProvisionerSecretName, "password"),
-			)
-		}
+		// // Append CSI Provision Creds env var if enabled.
+		// if s.stos.Spec.CSI.EnableProvisionCreds {
+		// 	envVar = append(
+		// 		envVar,
+		// 		corev1.EnvVar{
+		// 			Name:  csiRequireCredsCreateEnvVar,
+		// 			Value: "true",
+		// 		},
+		// 		corev1.EnvVar{
+		// 			Name:  csiRequireCredsDeleteEnvVar,
+		// 			Value: "true",
+		// 		},
+		// 		getCSICredsEnvVar(csiProvisionCredsUsernameEnvVar, csiProvisionerSecretName, "username"),
+		// 		getCSICredsEnvVar(csiProvisionCredsPasswordEnvVar, csiProvisionerSecretName, "password"),
+		// 	)
+		// }
 
-		// Append CSI Controller Publish env var if enabled.
-		if s.stos.Spec.CSI.EnableControllerPublishCreds {
-			envVar = append(
-				envVar,
-				corev1.EnvVar{
-					Name:  csiRequireCredsCtrlPubEnvVar,
-					Value: "true",
-				},
-				corev1.EnvVar{
-					Name:  csiRequireCredsCtrlUnpubEnvVar,
-					Value: "true",
-				},
-				getCSICredsEnvVar(csiControllerPubCredsUsernameEnvVar, csiControllerPublishSecretName, "username"),
-				getCSICredsEnvVar(csiControllerPubCredsPasswordEnvVar, csiControllerPublishSecretName, "password"),
-			)
-		}
+		// // Append CSI Controller Publish env var if enabled.
+		// if s.stos.Spec.CSI.EnableControllerPublishCreds {
+		// 	envVar = append(
+		// 		envVar,
+		// 		corev1.EnvVar{
+		// 			Name:  csiRequireCredsCtrlPubEnvVar,
+		// 			Value: "true",
+		// 		},
+		// 		corev1.EnvVar{
+		// 			Name:  csiRequireCredsCtrlUnpubEnvVar,
+		// 			Value: "true",
+		// 		},
+		// 		getCSICredsEnvVar(csiControllerPubCredsUsernameEnvVar, csiControllerPublishSecretName, "username"),
+		// 		getCSICredsEnvVar(csiControllerPubCredsPasswordEnvVar, csiControllerPublishSecretName, "password"),
+		// 	)
+		// }
 
-		// Append CSI Node Publish env var if enabled.
-		if s.stos.Spec.CSI.EnableNodePublishCreds {
-			envVar = append(
-				envVar,
-				corev1.EnvVar{
-					Name:  csiRequireCredsNodePubEnvVar,
-					Value: "true",
-				},
-				getCSICredsEnvVar(csiNodePubCredsUsernameEnvVar, csiNodePublishSecretName, "username"),
-				getCSICredsEnvVar(csiNodePubCredsPasswordEnvVar, csiNodePublishSecretName, "password"),
-			)
-		}
+		// // Append CSI Node Publish env var if enabled.
+		// if s.stos.Spec.CSI.EnableNodePublishCreds {
+		// 	envVar = append(
+		// 		envVar,
+		// 		corev1.EnvVar{
+		// 			Name:  csiRequireCredsNodePubEnvVar,
+		// 			Value: "true",
+		// 		},
+		// 		getCSICredsEnvVar(csiNodePubCredsUsernameEnvVar, csiNodePublishSecretName, "username"),
+		// 		getCSICredsEnvVar(csiNodePubCredsPasswordEnvVar, csiNodePublishSecretName, "password"),
+		// 	)
+		// }
 
 		// Append env vars to the first container, node container.
 		nodeContainer.Env = append(nodeContainer.Env, envVar...)
