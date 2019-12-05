@@ -6,7 +6,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/storageos/cluster-operator/pkg/util/k8s"
 )
@@ -278,28 +277,28 @@ func (s *Deployment) createDaemonSet() error {
 							ContainerPort: 5705,
 							Name:          "api",
 						}},
-						LivenessProbe: &corev1.Probe{
-							InitialDelaySeconds: int32(65),
-							TimeoutSeconds:      int32(10),
-							FailureThreshold:    int32(5),
-							Handler: corev1.Handler{
-								HTTPGet: &corev1.HTTPGetAction{
-									Path: "/v1/health",
-									Port: intstr.IntOrString{Type: intstr.String, StrVal: "api"},
-								},
-							},
-						},
-						ReadinessProbe: &corev1.Probe{
-							InitialDelaySeconds: int32(65),
-							TimeoutSeconds:      int32(10),
-							FailureThreshold:    int32(5),
-							Handler: corev1.Handler{
-								HTTPGet: &corev1.HTTPGetAction{
-									Path: "/v1/health",
-									Port: intstr.IntOrString{Type: intstr.String, StrVal: "api"},
-								},
-							},
-						},
+						// LivenessProbe: &corev1.Probe{
+						// 	InitialDelaySeconds: int32(65),
+						// 	TimeoutSeconds:      int32(10),
+						// 	FailureThreshold:    int32(5),
+						// 	Handler: corev1.Handler{
+						// 		HTTPGet: &corev1.HTTPGetAction{
+						// 			Path: "/v1/health",
+						// 			Port: intstr.IntOrString{Type: intstr.String, StrVal: "api"},
+						// 		},
+						// 	},
+						// },
+						// ReadinessProbe: &corev1.Probe{
+						// 	InitialDelaySeconds: int32(65),
+						// 	TimeoutSeconds:      int32(10),
+						// 	FailureThreshold:    int32(5),
+						// 	Handler: corev1.Handler{
+						// 		HTTPGet: &corev1.HTTPGetAction{
+						// 			Path: "/v1/health",
+						// 			Port: intstr.IntOrString{Type: intstr.String, StrVal: "api"},
+						// 		},
+						// 	},
+						// },
 						Env: []corev1.EnvVar{
 							{
 								Name: HostnameEnvVar,
