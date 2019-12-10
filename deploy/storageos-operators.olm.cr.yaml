@@ -9,6 +9,8 @@ spec:
   namespace: "storageos"
   csi:
     enable: true
+  kvBackend:
+    address: etcd-client
 
 ---
 

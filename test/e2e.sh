@@ -17,6 +17,27 @@ enable_lio() {
     echo
 }
 
+
+install_etcd() {
+    echo "Install Etcd Operator"
+
+    # Install etcd operator pre-reqs.
+    kubectl create -f etcd/etcd-rbac.yaml
+    # Install etcd operator.
+    kubectl create -f etcd/etcd-operator.yaml
+
+    # Wait for etcd operator to be ready.
+    until kubectl -n default get deployment etcd-operator --no-headers -o go-template='{{.status.readyReplicas}}' | grep -q 1; do sleep 3; done
+
+    # Install etcd cluster.
+    kubectl create -f etcd/etcd-cluster.yaml
+
+    # Wait for etcd cluster to be ready.
+    until kubectl -n default get pod -l app=etcd -l etcd_cluster=etcd -o go-template='{{range .items}}{{.status.phase}}{{end}}' | grep -q Running; do sleep 3; done
+
+    echo
+}
+
 run_kind() {
     echo "Download kind binary..."
 
@@ -259,6 +280,8 @@ main() {
 
         # Wait for all the OLM resources to be created and ready.
         sleep 20
+
+        install_etcd
 
         install_storageos_operator
 
