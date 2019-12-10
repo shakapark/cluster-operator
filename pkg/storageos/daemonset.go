@@ -205,6 +205,9 @@ const (
 
 	sysAdminCap = "SYS_ADMIN"
 	debugVal    = "xdebug"
+
+	csiEndpointVal = "unix:///var/lib/kubelet/plugins_registry/storageos/csi.sock"
+	csiVersionVal  = "v1"
 )
 
 func (s *Deployment) createDaemonSet() error {
@@ -344,7 +347,7 @@ func (s *Deployment) createDaemonSet() error {
 							},
 							{
 								Name:  JaegerServiceNameEnvVar,
-								Value: "alexl-c2beta1-on-vanilla-k8s-1-16",
+								Value: "alexl-c2rc1-on-vanilla-k8s",
 							},
 							{
 								Name:  KubernetesNamespaceEnvVar,
@@ -357,10 +360,6 @@ func (s *Deployment) createDaemonSet() error {
 							{
 								Name:  DisableTelemetryEnvVar,
 								Value: strconv.FormatBool(s.stos.Spec.DisableTelemetry),
-							},
-							{
-								Name:  CSIVersionEnvVar,
-								Value: "v1",
 							},
 							{
 								Name:  KubernetesDistributionEnvVar,
@@ -454,6 +453,8 @@ func (s *Deployment) createDaemonSet() error {
 
 	nodeContainer.Env = s.addDebugEnvVars(nodeContainer.Env)
 
+	nodeContainer.Env = s.addCSIEnvVars(nodeContainer.Env)
+
 	s.addNodeContainerResources(nodeContainer)
 
 	s.addSharedDir(podSpec)
@@ -481,10 +482,26 @@ func (s *Deployment) addKVBackendEnvVars(env []corev1.EnvVar) []corev1.EnvVar {
 func (s *Deployment) addDebugEnvVars(env []corev1.EnvVar) []corev1.EnvVar {
 	if s.stos.Spec.Debug {
 		debugEnvVar := corev1.EnvVar{
-			Name:  LogFileEnvVar,
+			Name:  LogLevelEnvVar,
 			Value: debugVal,
 		}
 		return append(env, debugEnvVar)
+	}
+	return env
+}
+
+// addCSIEnvVars checks if the debug mode is set and set the appropriate env var.
+func (s *Deployment) addCSIEnvVars(env []corev1.EnvVar) []corev1.EnvVar {
+	if s.stos.Spec.Debug {
+		CSIVersionEnvVar := corev1.EnvVar{
+			Name:  CSIVersionEnvVar,
+			Value: csiVersionVal,
+		}
+		CSIEndpointEnvVar := corev1.EnvVar{
+			Name:  CSIEndpointEnvVar,
+			Value: csiEndpointVal,
+		}
+		return append(env, CSIVersionEnvVar, CSIEndpointEnvVar)
 	}
 	return env
 }

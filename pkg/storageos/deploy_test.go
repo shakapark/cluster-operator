@@ -757,29 +757,29 @@ func TestDeployKVBackend(t *testing.T) {
 	podSpec := createdDaemonset.Spec.Template.Spec.Containers[0]
 
 	foundKVAddr := false
-	foundKVBackend := false
-
+	// foundKVBackend := false
+	// kvBackendEnvVar := ""
 	for _, e := range podSpec.Env {
 		switch e.Name {
-		case kvAddrEnvVar:
+		case ETCDEndpointsEnvVar:
 			foundKVAddr = true
 			if e.Value != testKVAddr {
-				t.Errorf("unexpected %s value:\n\t(GOT) %s\n\t(WNT) %s", kvAddrEnvVar, e.Value, testKVAddr)
+				t.Errorf("unexpected %s value:\n\t(GOT) %s\n\t(WNT) %s", ETCDEndpointsEnvVar, e.Value, testKVAddr)
 			}
-		case kvBackendEnvVar:
-			foundKVBackend = true
-			if e.Value != testBackend {
-				t.Errorf("unexpected %s value:\n\t(GOT) %s\n\t(WNT) %s", kvBackendEnvVar, e.Value, testBackend)
-			}
+			// case kvBackendEnvVar:
+			// 	foundKVBackend = true
+			// 	if e.Value != testBackend {
+			// 		t.Errorf("unexpected %s value:\n\t(GOT) %s\n\t(WNT) %s", kvBackendEnvVar, e.Value, testBackend)
+			// 	}
 		}
 	}
 
 	if !foundKVAddr {
-		t.Errorf("expected %s to be in the pod spec env", kvAddrEnvVar)
+		t.Errorf("expected %s to be in the pod spec env", ETCDEndpointsEnvVar)
 	}
-	if !foundKVBackend {
-		t.Errorf("expected %s to be in the pod spec env", kvBackendEnvVar)
-	}
+	// if !foundKVBackend {
+	// 	t.Errorf("expected %s to be in the pod spec env", kvBackendEnvVar)
+	// }
 }
 
 func TestDeployDebug(t *testing.T) {
@@ -833,16 +833,16 @@ func TestDeployDebug(t *testing.T) {
 
 	for _, e := range podSpec.Env {
 		switch e.Name {
-		case debugEnvVar:
+		case LogLevelEnvVar:
 			foundDebug = true
 			if e.Value != debugVal {
-				t.Errorf("unexpected %s value:\n\t(GOT) %s\n\t(WNT) %s", debugEnvVar, e.Value, debugVal)
+				t.Errorf("unexpected %s value:\n\t(GOT) %s\n\t(WNT) %s", LogLevelEnvVar, e.Value, debugVal)
 			}
 		}
 	}
 
 	if !foundDebug {
-		t.Errorf("expected %s to be in the pod spec env", debugEnvVar)
+		t.Errorf("expected %s to be in the pod spec env", LogLevelEnvVar)
 	}
 }
 
