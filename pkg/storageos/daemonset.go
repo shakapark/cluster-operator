@@ -453,7 +453,7 @@ func (s *Deployment) createDaemonSet() error {
 
 	nodeContainer.Env = s.addDebugEnvVars(nodeContainer.Env)
 
-	nodeContainer.Env = s.addCSIEnvVars(nodeContainer.Env)
+	// nodeContainer.Env = s.addCSIEnvVars(nodeContainer.Env)
 
 	s.addNodeContainerResources(nodeContainer)
 
@@ -492,7 +492,7 @@ func (s *Deployment) addDebugEnvVars(env []corev1.EnvVar) []corev1.EnvVar {
 
 // addCSIEnvVars checks if the debug mode is set and set the appropriate env var.
 func (s *Deployment) addCSIEnvVars(env []corev1.EnvVar) []corev1.EnvVar {
-	if s.stos.Spec.Debug {
+	if s.stos.Spec.CSI.Enable {
 		CSIVersionEnvVar := corev1.EnvVar{
 			Name:  CSIVersionEnvVar,
 			Value: csiVersionVal,
