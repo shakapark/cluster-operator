@@ -457,8 +457,6 @@ func (s *Deployment) createDaemonSet() error {
 
 	nodeContainer.Env = s.addDebugEnvVars(nodeContainer.Env)
 
-	// nodeContainer.Env = s.addCSIEnvVars(nodeContainer.Env)
-
 	s.addNodeContainerResources(nodeContainer)
 
 	s.addSharedDir(podSpec)
@@ -490,22 +488,6 @@ func (s *Deployment) addDebugEnvVars(env []corev1.EnvVar) []corev1.EnvVar {
 			Value: debugVal,
 		}
 		return append(env, debugEnvVar)
-	}
-	return env
-}
-
-// addCSIEnvVars checks if the debug mode is set and set the appropriate env var.
-func (s *Deployment) addCSIEnvVars(env []corev1.EnvVar) []corev1.EnvVar {
-	if s.stos.Spec.CSI.Enable {
-		CSIVersionEnvVar := corev1.EnvVar{
-			Name:  CSIVersionEnvVar,
-			Value: csiVersionVal,
-		}
-		CSIEndpointEnvVar := corev1.EnvVar{
-			Name:  CSIEndpointEnvVar,
-			Value: csiEndpointVal,
-		}
-		return append(env, CSIVersionEnvVar, CSIEndpointEnvVar)
 	}
 	return env
 }

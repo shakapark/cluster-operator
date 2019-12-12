@@ -150,6 +150,10 @@ func (s *Deployment) addCSI(podSpec *corev1.PodSpec) {
 				Name:  CSIEndpointEnvVar,
 				Value: s.stos.Spec.GetCSIEndpoint(CSIV1Supported(s.k8sVersion)),
 			},
+			{
+				Name:  CSIVersionEnvVar,
+				Value: s.stos.Spec.GetCSIVersion(true),
+			},
 		}
 
 		// // Append CSI Provision Creds env var if enabled.
