@@ -761,10 +761,10 @@ func TestDeployKVBackend(t *testing.T) {
 	// kvBackendEnvVar := ""
 	for _, e := range podSpec.Env {
 		switch e.Name {
-		case ETCDEndpointsEnvVar:
+		case etcdEndpointsEnvVar:
 			foundKVAddr = true
 			if e.Value != testKVAddr {
-				t.Errorf("unexpected %s value:\n\t(GOT) %s\n\t(WNT) %s", ETCDEndpointsEnvVar, e.Value, testKVAddr)
+				t.Errorf("unexpected %s value:\n\t(GOT) %s\n\t(WNT) %s", etcdEndpointsEnvVar, e.Value, testKVAddr)
 			}
 			// case kvBackendEnvVar:
 			// 	foundKVBackend = true
@@ -775,7 +775,7 @@ func TestDeployKVBackend(t *testing.T) {
 	}
 
 	if !foundKVAddr {
-		t.Errorf("expected %s to be in the pod spec env", ETCDEndpointsEnvVar)
+		t.Errorf("expected %s to be in the pod spec env", etcdEndpointsEnvVar)
 	}
 	// if !foundKVBackend {
 	// 	t.Errorf("expected %s to be in the pod spec env", kvBackendEnvVar)
@@ -833,16 +833,16 @@ func TestDeployDebug(t *testing.T) {
 
 	for _, e := range podSpec.Env {
 		switch e.Name {
-		case LogLevelEnvVar:
+		case logLevelEnvVar:
 			foundDebug = true
 			if e.Value != debugVal {
-				t.Errorf("unexpected %s value:\n\t(GOT) %s\n\t(WNT) %s", LogLevelEnvVar, e.Value, debugVal)
+				t.Errorf("unexpected %s value:\n\t(GOT) %s\n\t(WNT) %s", logLevelEnvVar, e.Value, debugVal)
 			}
 		}
 	}
 
 	if !foundDebug {
-		t.Errorf("expected %s to be in the pod spec env", LogLevelEnvVar)
+		t.Errorf("expected %s to be in the pod spec env", logLevelEnvVar)
 	}
 }
 
