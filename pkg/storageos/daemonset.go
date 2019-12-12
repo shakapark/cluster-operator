@@ -164,9 +164,9 @@ const (
 	ETCDPasswordEnvVar = "ETCD_PASSWORD"
 
 	// Jaeger Agent env vars
-	JaegerServiceNameEnvVar = "JAEGER_SERVICE_NAME"
-	JaegerEndpointEnvVar    = "JAEGER_ENDPOINT"
-
+	JaegerServiceNameEnvVar          = "JAEGER_SERVICE_NAME"
+	JaegerEndpointEnvVar             = "JAEGER_ENDPOINT"
+	K8sEnableSchedulerExtenderEnvVar = "K8S_ENABLE_SCHEDULER_EXTENDER"
 	// c1 below
 	// hostnameEnvVar                      = "HOSTNAME"
 	// adminUsernameEnvVar                 = "ADMIN_USERNAME"
@@ -368,6 +368,10 @@ func (s *Deployment) createDaemonSet() error {
 							{
 								Name:  LogFormatEnvVar,
 								Value: "json",
+							},
+							{
+								Name:  K8sEnableSchedulerExtenderEnvVar,
+								Value: "true",
 							},
 						},
 						SecurityContext: &corev1.SecurityContext{
