@@ -178,7 +178,7 @@ func (s Deployment) createSchedulerPolicy() error {
 		FilterVerb:     "filter",
 		PrioritizeVerb: "prioritize",
 		EnableHTTPS:    false,
-		URLPrefix:      fmt.Sprintf("http://%s:5705/v1/scheduler", serviceEndpoint),
+		URLPrefix:      fmt.Sprintf("http://%s:5705/v2/k8s/scheduler", serviceEndpoint),
 	}
 
 	// Render the policy configuration.
