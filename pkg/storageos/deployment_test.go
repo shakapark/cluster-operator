@@ -17,6 +17,9 @@ func Test_isV2image(t *testing.T) {
 		{image: "storageos/node:2.0.0", want: true},
 		{image: "storageos/node:2.0.0-alpha1", want: true},
 		{image: "storageos/node:c2-7c46250197bf", want: true},
+		{image: "myregistryhost:5000/storageos/node:1.0.0", want: false},
+		{image: "myregistryhost:5000/storageos/node:2.0.0", want: true},
+		{image: "invalidscheme://myregistryhost:5000/storageos/node:2.0.0", want: true},
 		{image: "2.0.0", want: false},
 	}
 	for _, tt := range tests {

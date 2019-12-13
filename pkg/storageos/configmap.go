@@ -1,6 +1,7 @@
 package storageos
 
 import (
+	"fmt"
 	"path/filepath"
 	"strconv"
 
@@ -8,6 +9,10 @@ import (
 )
 
 const (
+
+	// External ETCD config, V1 only.
+	kvBackendEnvVar = "KV_BACKEND"
+	kvAddrEnvVar    = "KV_ADDR"
 
 	// Comma separated list of endpoints on which we will try to connect to the
 	// cluster's ETCD instances.
@@ -64,6 +69,9 @@ const (
 	// CSI version to use, if CSI_ENDPOINT is set.
 	csiVersionEnvVar = "CSI_VERSION"
 
+	// Directory in which devices are created.
+	deviceDirEnvVar = "DEVICE_DIR"
+
 	// TODO: add to StorageOSCluster CR and optionally create Certificate CR?
 	// https://cert-manager.io/docs/usage/certificate/ Since secrets will be
 	// used, probably needs to be implemented in DaemonSet.
@@ -119,7 +127,7 @@ const (
 // createService creates a ConfigMap to store the node container configuration.
 func (s *Deployment) createConfigMap() error {
 
-	config := configFromSpec(s.stos.Spec, s.isV2)
+	config := configFromSpec(s.stos.Spec, CSIV1Supported(s.k8sVersion), s.nodev2)
 
 	labels := make(map[string]string)
 
@@ -130,7 +138,7 @@ func (s *Deployment) createConfigMap() error {
 	return nil
 }
 
-func configFromSpec(spec storageosv1.StorageOSClusterSpec, isV2 bool) map[string]string {
+func configFromSpec(spec storageosv1.StorageOSClusterSpec, csiv1 bool, nodev2 bool) map[string]string {
 
 	config := make(map[string]string)
 
@@ -139,12 +147,25 @@ func configFromSpec(spec storageosv1.StorageOSClusterSpec, isV2 bool) map[string
 	//   - ADVERTISE_IP (reads from status.podIP)
 	//   - BOOTSTRAP_USERNAME, BOOTSTRAP_PASSWORD (reads from secret)
 
-	// ETCD_ENDPOINTS must be set to a comma separated list of endpoints.
-	config[etcdEndpointsEnvVar] = spec.KVBackend.Address
+	// Etcd endpoint
+	switch nodev2 {
+	case true:
+		// ETCD_ENDPOINTS must be set to a comma separated list of endpoints.
+		config[etcdEndpointsEnvVar] = spec.KVBackend.Address
+	case false:
+		// If external etcd is enabled, KV_BACKEND must be set to "etcd" and
+		// KV_ADDRESS set to a comma separated list of endpoints.
+		if spec.KVBackend.Backend != "" {
+			config[kvBackendEnvVar] = spec.KVBackend.Backend
+		}
+		if spec.KVBackend.Address != "" {
+			config[kvAddrEnvVar] = spec.KVBackend.Address
+		}
+	}
 
 	// Append Etcd TLS config, if given.  Volumes are created in Podspec.
 	if spec.TLSEtcdSecretRefName != "" && spec.TLSEtcdSecretRefNamespace != "" {
-		config = addEtcdTLSConfig(config, isV2)
+		config = addEtcdTLSConfig(config, nodev2)
 	}
 
 	// Always show telemetry and feature options to ensure they're visble.
@@ -152,8 +173,10 @@ func configFromSpec(spec storageosv1.StorageOSClusterSpec, isV2 bool) map[string
 
 	// TODO: separte CR items for version check and crash reports.  Use
 	// Telemetry to enable/disable everything for now.
-	config[disableVersionCheckEnvVar] = strconv.FormatBool(spec.DisableTelemetry)
-	config[disableCrashReportingEnvVar] = strconv.FormatBool(spec.DisableTelemetry)
+	if nodev2 {
+		config[disableVersionCheckEnvVar] = strconv.FormatBool(spec.DisableTelemetry)
+		config[disableCrashReportingEnvVar] = strconv.FormatBool(spec.DisableTelemetry)
+	}
 
 	// Features
 	config[disableFencingEnvVar] = strconv.FormatBool(spec.DisableFencing)
@@ -177,9 +200,16 @@ func configFromSpec(spec storageosv1.StorageOSClusterSpec, isV2 bool) map[string
 	// allows users to toggle the feature without restarting the cluster.
 	config[k8sSchedulerExtenderEnvVar] = "true"
 
-	// CSI - we only support v1.
-	config[csiEndpointEnvVar] = spec.GetCSIEndpoint(true)
-	config[csiVersionEnvVar] = spec.GetCSIVersion(true)
+	// CSI is always enabled in V2, optional in V1.
+	if nodev2 || spec.CSI.Enable {
+		config[csiEndpointEnvVar] = spec.GetCSIEndpoint(csiv1)
+		config[csiVersionEnvVar] = spec.GetCSIVersion(csiv1)
+	}
+
+	// If kubelet is running in a container, sharedDir should be set.
+	if spec.SharedDir != "" {
+		config[deviceDirEnvVar] = fmt.Sprintf("%s/devices", spec.SharedDir)
+	}
 
 	config[logLevelEnvVar] = "info"
 	if spec.Debug {

@@ -22,7 +22,6 @@ const (
 	// bootstrapNamespaceEnvVar = "BOOTSTRAP_NAMESPACE"
 
 	advertiseIPEnvVar  = "ADVERTISE_IP"
-	deviceDirEnvVar    = "DEVICE_DIR"
 	addressEnvVar      = "ADDRESS"
 	kubeNodeNameEnvVar = "KUBE_NODE_NAME"
 

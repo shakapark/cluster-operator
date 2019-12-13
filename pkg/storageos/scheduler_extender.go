@@ -178,7 +178,7 @@ func (s Deployment) createSchedulerPolicy() error {
 	// Service address format: <service-name>.<namespace>.svc.cluster.local.
 	serviceEndpoint := fmt.Sprintf("%s.%s.svc.cluster.local", s.stos.Spec.GetServiceName(), s.stos.Spec.GetResourceNS())
 	uriPath := uriPathV1
-	if s.isV2 {
+	if s.nodev2 {
 		uriPath = uriPathV2
 	}
 	policyData := schedulerPolicyTemplate{

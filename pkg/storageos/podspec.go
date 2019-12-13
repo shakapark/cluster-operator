@@ -131,7 +131,7 @@ func (s *Deployment) addCSI(podSpec *corev1.PodSpec) {
 		// V1 passes CSI credentials as env vars.  In V2, CSI credentials are
 		// set in the StorageClass.
 		envVar := []corev1.EnvVar{}
-		if !s.isV2 {
+		if !s.nodev2 {
 
 			// Append CSI Provision Creds env var if enabled.
 			if s.stos.Spec.CSI.EnableProvisionCreds {
