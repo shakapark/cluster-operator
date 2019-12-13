@@ -13,6 +13,7 @@ const (
 	// External ETCD config, V1 only.
 	kvBackendEnvVar = "KV_BACKEND"
 	kvAddrEnvVar    = "KV_ADDR"
+	joinEnvVar      = "JOIN"
 
 	// Comma separated list of endpoints on which we will try to connect to the
 	// cluster's ETCD instances.
@@ -147,12 +148,15 @@ func configFromSpec(spec storageosv1.StorageOSClusterSpec, csiv1 bool, nodev2 bo
 	//   - ADVERTISE_IP (reads from status.podIP)
 	//   - BOOTSTRAP_USERNAME, BOOTSTRAP_PASSWORD (reads from secret)
 
-	// Etcd endpoint
+	// Etcd endpoint, and join for V1.
 	switch nodev2 {
 	case true:
 		// ETCD_ENDPOINTS must be set to a comma separated list of endpoints.
 		config[etcdEndpointsEnvVar] = spec.KVBackend.Address
 	case false:
+		// Join must be set.
+		config[joinEnvVar] = spec.Join
+
 		// If external etcd is enabled, KV_BACKEND must be set to "etcd" and
 		// KV_ADDRESS set to a comma separated list of endpoints.
 		if spec.KVBackend.Backend != "" {

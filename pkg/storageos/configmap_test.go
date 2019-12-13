@@ -13,6 +13,7 @@ func Test_configFromSpec(t *testing.T) {
 
 	v1DefaultSpec := storageosv1.StorageOSClusterSpec{}
 	v1DefaultConfig := map[string]string{
+		joinEnvVar:                 "",
 		disableFencingEnvVar:       "false",
 		disableTelemetryEnvVar:     "false",
 		k8sSchedulerExtenderEnvVar: "true",
@@ -79,6 +80,18 @@ func Test_configFromSpec(t *testing.T) {
 			wantcustom: map[string]string{
 				csiEndpointEnvVar: "unix:///var/lib/kubelet/plugins/storageos/csi.sock",
 				csiVersionEnvVar:  "v0",
+			},
+		},
+		{
+			name: "v1 join",
+			spec: storageosv1.StorageOSClusterSpec{
+				Join: "1.2.3.4,5.6.7.8,4.3.2.1",
+			},
+			csiv1:    true,
+			nodev2:   false,
+			wantbase: v1DefaultConfig,
+			wantcustom: map[string]string{
+				joinEnvVar: "1.2.3.4,5.6.7.8,4.3.2.1",
 			},
 		},
 		{
