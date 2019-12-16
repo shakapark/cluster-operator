@@ -17,8 +17,8 @@ func Test_configFromSpec(t *testing.T) {
 		disableFencingEnvVar:       "false",
 		disableTelemetryEnvVar:     "false",
 		k8sSchedulerExtenderEnvVar: "true",
-		k8sNamespaceEnvVar:         "storageos",
-		logFormatEnvVar:            "json",
+		v1NamespaceEnvVar:          "storageos",
+		logFormatEnvVar:            "text",
 		logLevelEnvVar:             "info",
 	}
 
@@ -32,7 +32,7 @@ func Test_configFromSpec(t *testing.T) {
 		disableVersionCheckEnvVar:   "false",
 		etcdEndpointsEnvVar:         "",
 		k8sSchedulerExtenderEnvVar:  "true",
-		k8sNamespaceEnvVar:          "storageos",
+		v2NamespaceEnvVar:           "storageos",
 		logFormatEnvVar:             "json",
 		logLevelEnvVar:              "info",
 	}

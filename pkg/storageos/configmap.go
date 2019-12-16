@@ -52,8 +52,9 @@ const (
 	// against StorageOS servers.
 	disableVersionCheckEnvVar = "DISABLE_VERSION_CHECK"
 
-	// Kubernetes namespace in which storageos operates.
-	k8sNamespaceEnvVar = "K8S_NAMESPACE"
+	// Namespace in which storageos operates.
+	v1NamespaceEnvVar = "NAMESPACE"
+	v2NamespaceEnvVar = "K8S_NAMESPACE"
 
 	// The kubernetes distribution in which storageos is operating.
 	k8sDistroEnvVar = "K8S_DISTRO"
@@ -194,7 +195,12 @@ func configFromSpec(spec storageosv1.StorageOSClusterSpec, csiv1 bool, nodev2 bo
 		config[forceTCMUEnvVar] = strconv.FormatBool(spec.ForceTCMU)
 	}
 
-	config[k8sNamespaceEnvVar] = spec.GetResourceNS()
+	switch nodev2 {
+	case true:
+		config[v2NamespaceEnvVar] = spec.GetResourceNS()
+	case false:
+		config[v1NamespaceEnvVar] = spec.GetResourceNS()
+	}
 	if spec.K8sDistro != "" {
 		config[k8sDistroEnvVar] = spec.K8sDistro
 	}
@@ -219,7 +225,10 @@ func configFromSpec(spec storageosv1.StorageOSClusterSpec, csiv1 bool, nodev2 bo
 	if spec.Debug {
 		config[logLevelEnvVar] = debugVal
 	}
-	config[logFormatEnvVar] = "json"
+	config[logFormatEnvVar] = "text"
+	if nodev2 {
+		config[logFormatEnvVar] = "json"
+	}
 
 	return config
 }
