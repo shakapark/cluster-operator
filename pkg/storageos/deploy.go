@@ -36,6 +36,7 @@ const (
 
 	daemonsetName   = "storageos-daemonset"
 	statefulsetName = "storageos-statefulset"
+	configmapName   = "storageos-node-config"
 	csiHelperName   = "storageos-csi-helper"
 
 	tlsSecretType       = "kubernetes.io/tls"
@@ -127,6 +128,10 @@ func (s *Deployment) Deploy() error {
 	}
 
 	if err := s.createTLSEtcdSecret(); err != nil {
+		return err
+	}
+
+	if err := s.createConfigMap(); err != nil {
 		return err
 	}
 
