@@ -8,6 +8,7 @@ import (
 	"github.com/storageos/cluster-operator/pkg/util/k8s/resource"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	storageosv1 "github.com/storageos/cluster-operator/pkg/apis/storageos/v1"
@@ -262,6 +263,34 @@ func (s *Deployment) addNodeContainerResources(nodeContainer *corev1.Container) 
 			Requests: corev1.ResourceList{},
 		}
 		s.stos.Spec.Resources.DeepCopyInto(&nodeContainer.Resources)
+	}
+}
+
+// addNodeContainerProbes adds probes for the node container healthchecks.
+// NOTE: This can be added back into the main DaemonSet once it no longer needs
+// to be conditional on the node container version.
+func (s *Deployment) addNodeContainerProbes(nodeContainer *corev1.Container) {
+	nodeContainer.LivenessProbe = &corev1.Probe{
+		InitialDelaySeconds: int32(65),
+		TimeoutSeconds:      int32(10),
+		FailureThreshold:    int32(5),
+		Handler: corev1.Handler{
+			HTTPGet: &corev1.HTTPGetAction{
+				Path: "/v1/health",
+				Port: intstr.IntOrString{Type: intstr.String, StrVal: "api"},
+			},
+		},
+	}
+	nodeContainer.LivenessProbe = &corev1.Probe{
+		InitialDelaySeconds: int32(65),
+		TimeoutSeconds:      int32(10),
+		FailureThreshold:    int32(5),
+		Handler: corev1.Handler{
+			HTTPGet: &corev1.HTTPGetAction{
+				Path: "/v1/health",
+				Port: intstr.IntOrString{Type: intstr.String, StrVal: "api"},
+			},
+		},
 	}
 }
 

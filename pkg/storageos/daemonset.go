@@ -128,28 +128,6 @@ func (s *Deployment) createDaemonSet() error {
 							ContainerPort: 5705,
 							Name:          "api",
 						}},
-						// LivenessProbe: &corev1.Probe{
-						// 	InitialDelaySeconds: int32(65),
-						// 	TimeoutSeconds:      int32(10),
-						// 	FailureThreshold:    int32(5),
-						// 	Handler: corev1.Handler{
-						// 		HTTPGet: &corev1.HTTPGetAction{
-						// 			Path: "/v1/health",
-						// 			Port: intstr.IntOrString{Type: intstr.String, StrVal: "api"},
-						// 		},
-						// 	},
-						// },
-						// ReadinessProbe: &corev1.Probe{
-						// 	InitialDelaySeconds: int32(65),
-						// 	TimeoutSeconds:      int32(10),
-						// 	FailureThreshold:    int32(5),
-						// 	Handler: corev1.Handler{
-						// 		HTTPGet: &corev1.HTTPGetAction{
-						// 			Path: "/v1/health",
-						// 			Port: intstr.IntOrString{Type: intstr.String, StrVal: "api"},
-						// 		},
-						// 	},
-						// },
 						EnvFrom: []corev1.EnvFromSource{
 							corev1.EnvFromSource{
 								ConfigMapRef: &corev1.ConfigMapEnvSource{
@@ -291,11 +269,14 @@ func (s *Deployment) createDaemonSet() error {
 
 	s.addNodeAffinity(podSpec)
 
+	// TODO: update when V2 supports health endpoint.
+	if !s.nodev2 {
+		s.addNodeContainerProbes(nodeContainer)
+	}
+
 	if err := s.addTolerations(podSpec); err != nil {
 		return err
 	}
-
-	s.addNodeContainerResources(nodeContainer)
 
 	s.addSharedDir(podSpec)
 
