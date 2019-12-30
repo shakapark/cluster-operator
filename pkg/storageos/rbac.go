@@ -455,7 +455,7 @@ func (s *Deployment) createClusterRoleForInit() error {
 	rules := []rbacv1.PolicyRule{
 		{
 			APIGroups: []string{"apps"},
-			Resources: []string{"daemonsets"},
+			Resources: []string{"daemonsets", "statefulsets"},
 			Verbs:     []string{"get"},
 		},
 	}

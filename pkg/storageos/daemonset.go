@@ -5,6 +5,7 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
@@ -54,10 +55,30 @@ func (s *Deployment) createDaemonSet() error {
 	privileged := true
 	mountPropagationBidirectional := corev1.MountPropagationBidirectional
 	allowPrivilegeEscalation := true
+	scName := "csi-cinder-classic"
 
-	spec := &appsv1.DaemonSetSpec{
+	spec := &appsv1.StatefulSetSpec{
+		ServiceName: "storageos",
 		Selector: &metav1.LabelSelector{
 			MatchLabels: ls,
+		},
+		VolumeClaimTemplates: []corev1.PersistentVolumeClaim{
+			{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "state",
+				},
+				Spec: corev1.PersistentVolumeClaimSpec{
+					AccessModes: []corev1.PersistentVolumeAccessMode{
+						"ReadWriteOnce",
+					},
+					Resources: corev1.ResourceRequirements{
+						Requests: corev1.ResourceList{
+							corev1.ResourceStorage: resource.MustParse("50Gi"),
+						},
+					},
+					StorageClassName: &scName,
+				},
+			},
 		},
 		Template: corev1.PodTemplateSpec{
 			ObjectMeta: metav1.ObjectMeta{
@@ -94,11 +115,6 @@ func (s *Deployment) createDaemonSet() error {
 							{
 								Name:             "sys",
 								MountPath:        "/sys",
-								MountPropagation: &mountPropagationBidirectional,
-							},
-							{
-								Name:             "state",
-								MountPath:        "/var/lib/storageos",
 								MountPropagation: &mountPropagationBidirectional,
 							},
 						},
@@ -262,20 +278,12 @@ func (s *Deployment) createDaemonSet() error {
 							},
 						},
 					},
-					{
-						Name: "state",
-						VolumeSource: corev1.VolumeSource{
-							HostPath: &corev1.HostPathVolumeSource{
-								Path: "/var/lib/storageos",
-							},
-						},
-					},
 				},
 			},
 		},
 		// OnDelete update strategy by default.
-		UpdateStrategy: appsv1.DaemonSetUpdateStrategy{
-			Type: appsv1.OnDeleteDaemonSetStrategyType,
+		UpdateStrategy: appsv1.StatefulSetUpdateStrategy{
+			Type: appsv1.OnDeleteStatefulSetStrategyType,
 		},
 	}
 
@@ -302,7 +310,7 @@ func (s *Deployment) createDaemonSet() error {
 
 	s.addCSI(podSpec)
 
-	return s.k8sResourceManager.DaemonSet(daemonsetName, s.stos.Spec.GetResourceNS(), nil, spec).Create()
+	return s.k8sResourceManager.StatefulSet(daemonsetName, s.stos.Spec.GetResourceNS(), nil, spec).Create()
 }
 
 // addKVBackendEnvVars checks if KVBackend is set and sets the appropriate env vars.
